@@ -1,53 +1,43 @@
-name: Build Stable
+name: Push latest KernelSU
 on:
-  watch:
-    types: [started]
-
   workflow_dispatch:
+  schedule:
+    - cron: '16 * * * *'
 
 jobs:
   build:
-    name: Build KernelSU Stable
     runs-on: ubuntu-latest
+    env:
+      ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
-      - name: Setup build kernel environment
-        run: |
-          sudo apt update
-          sudo apt install -y --no-install-recommends libc6-dev clang flex bison libssl-dev bc python3 python2 zip unzip git lld llvm
-          mkdir -p $GITHUB_WORKSPACE/KernelSU
-          
-      - name: Download Proton-clang
-        run: |
-          cd $GITHUB_WORKSPACE/KernelSU
-          git clone https://github.com/kdrag0n/proton-clang.git proton-clang --depth=1
-          export PATH="$GITHUB_WORKSPACE/KernelSU/proton-clang/bin:$PATH"
-          
-      - name: Download kernel source
-        run: |
-          cd $GITHUB_WORKSPACE/KernelSU
-          git clone https://github.com/ldbsmh/kernel_xiaomi_violet.git --depth=1
-          
-      - name: Integrate KernelSU
-        run: |
-          cd $GITHUB_WORKSPACE/KernelSU/kernel_xiaomi_violet
-          curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
-          
-      - name: Compiling Kernel
-        run: |
-          cd $GITHUB_WORKSPACE/KernelSU/kernel_xiaomi_violet
-          chmod +x build.sh
-          ./build.sh
-          filename=$(find . -name 'Quick*' -type f -printf '%f\n' | head -n1)
-          if [[ -z "$filename" ]]; then
-            echo "Error: Kernel build file not found."
-            exit 1
-          fi
-          echo "FILENAME=$filename" >> $GITHUB_ENV
-          
-      - name: Uploading Kernel
-        if: success()
-        uses: actions/upload-artifact@v3
-        with:
-          name: QuicksilveR_KernelSU
-          path: ${{ github.workspace }}/KernelSU/kernel_xiaomi_violet/${{ env.FILENAME }}
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+        submodules: 'true'
+        fetch-depth: 0
+
+    - name: Update Repo
+      run: |
+        git config --global user.name "Joker-V2"
+        git config --global user.email "nipinna0@gmail.com"
+        git submodule sync
+        git submodule update --init --recursive
+        cd $GITHUB_WORKSPACE/KernelSU
+        git checkout main
+        git pull
+        cd ..
+        # 假设生成的文件在"generated_files"目录中
+        # 添加你的构建或生成文件的命令，例如:
+        # make build_some_files
+        # 然后添加和提交这些文件
+        git add . # 确保包括了所有需要的文件，并检查.gitignore是否有影响
+        git commit -m "KernelSU: Sync and commit generated files"
+        # 如果没有任何变更，这个提交将不会执行，因此你可能需要检查是否真的有文件需要提交
+
+    - name: Push
+      if: env.ACCESS_TOKEN != ''
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.ACCESS_TOKEN }}
+        force: true # 如果需要的话可以加上force push，但请谨慎使用
