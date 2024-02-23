@@ -15,27 +15,27 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y --no-install-recommends libc6-dev clang flex bison libssl-dev bc python3 python2 zip unzip git lld llvm
-          mkdir -p $GITHUB_WORKSPACE/kernel_workspace
+          mkdir -p $GITHUB_WORKSPACE/KernelSU
           
       - name: Download Proton-clang
         run: |
-          cd $GITHUB_WORKSPACE/kernel_workspace
+          cd $GITHUB_WORKSPACE/KernelSU
           git clone https://github.com/kdrag0n/proton-clang.git proton-clang --depth=1
-          export PATH="$GITHUB_WORKSPACE/kernel_workspace/proton-clang/bin:$PATH"
+          export PATH="$GITHUB_WORKSPACE/KernelSU/proton-clang/bin:$PATH"
           
       - name: Download kernel source
         run: |
-          cd $GITHUB_WORKSPACE/kernel_workspace
+          cd $GITHUB_WORKSPACE/KernelSU
           git clone https://github.com/ldbsmh/kernel_xiaomi_violet.git --depth=1
           
       - name: Integrate KernelSU
         run: |
-          cd $GITHUB_WORKSPACE/kernel_workspace/kernel_xiaomi_violet
+          cd $GITHUB_WORKSPACE/KernelSU/kernel_xiaomi_violet
           curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
           
       - name: Compiling Kernel
         run: |
-          cd $GITHUB_WORKSPACE/kernel_workspace/kernel_xiaomi_violet
+          cd $GITHUB_WORKSPACE/KernelSU/kernel_xiaomi_violet
           chmod +x build.sh
           ./build.sh
           filename=$(find . -name 'Quick*' -type f -printf '%f\n' | head -n1)
@@ -50,4 +50,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: QuicksilveR_KernelSU
-          path: ${{ github.workspace }}/kernel_workspace/kernel_xiaomi_violet/${{ env.FILENAME }}
+          path: ${{ github.workspace }}/KernelSU/kernel_xiaomi_violet/${{ env.FILENAME }}
