@@ -30,12 +30,12 @@ jobs:
         
     - name: Integrate KernelSU
       run: |
-        cd $GITHUB_WORKSPACE/kernel_workspace/ksu_kernel_xiaomi_violet
+        cd $GITHUB_WORKSPACE/kernel_workspace/kernel_xiaomi_violet
         curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
         
     - name: Compiling Kernel
       run: |
-        cd $GITHUB_WORKSPACE/kernel_workspace/ksu_kernel_xiaomi_violet
+        cd $GITHUB_WORKSPACE/kernel_workspace/kernel_xiaomi_violet
         chmod +x build.sh
         ./build.sh
         filename=$(find . -name Quick* -printf '%f\n')
@@ -46,4 +46,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: QuicksilveR_KernelSU
-        path: ${{ github.workspace }}/kernel_workspace/ksu_kernel_xiaomi_violet/${{ env.FILENAME }}
+        path: ${{ github.workspace }}/kernel_workspace/kernel_xiaomi_violet/${{ env.FILENAME }}
