@@ -17,7 +17,7 @@ jobs:
         submodules: 'true'
         fetch-depth: 0
 
-    - name: Update Repo
+    - name: Update Repo and Commit Generated Files
       run: |
         git config --global user.name "Joker-V2"
         git config --global user.email "nipinna0@gmail.com"
@@ -26,18 +26,19 @@ jobs:
         cd $GITHUB_WORKSPACE/KernelSU
         git checkout main
         git pull
+        # 假设您的生成步骤在这里
+        # make your changes
         cd ..
-        # 假设生成的文件在"generated_files"目录中
-        # 添加你的构建或生成文件的命令，例如:
-        # make build_some_files
-        # 然后添加和提交这些文件
-        git add . # 确保包括了所有需要的文件，并检查.gitignore是否有影响
-        git commit -m "KernelSU: Sync and commit generated files"
-        # 如果没有任何变更，这个提交将不会执行，因此你可能需要检查是否真的有文件需要提交
+        git add . # 添加所有更改，包括新文件
+        git status # 显示状态以调试目的
+        git diff-index --quiet HEAD || git commit -m "KernelSU: Sync with repo and commit generated files" # 如果有更改，则提交它们
 
-    - name: Push
+    - name: Push Changes
       if: env.ACCESS_TOKEN != ''
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.ACCESS_TOKEN }}
-        force: true # 如果需要的话可以加上force push，但请谨慎使用
+      run: |
+        git push origin main
+      env:
+        GIT_AUTHOR_NAME: Joker-V2
+        GIT_AUTHOR_EMAIL: nipinna0@gmail.com
+        GIT_COMMITTER_NAME: Joker-V2
+        GIT_COMMITTER_EMAIL: nipinna0@gmail.com
