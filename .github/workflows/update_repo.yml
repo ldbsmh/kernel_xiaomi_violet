@@ -1,4 +1,4 @@
-​name: Build Stable
+name: Build Stable
 on:
   watch:
     types: [started]
@@ -7,16 +7,15 @@ on:
 
 jobs:
   build:
+    name: Build KernelSU Stable
     runs-on: ubuntu-latest
-    env:
-      ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        persist-credentials: false
-        submodules: 'true'
-        fetch-depth: 0
+    - uses: actions/checkout@v3
+    - name: Setup build kernel environment
+      run: |
+        sudo apt update
+        sudo apt install libc6-dev clang flex bison libssl-dev bc python3 python2 zip unzip git lld llvm
+        mkdir -p $GITHUB_WORKSPACE/kernel_workspace
         
     - name: Download Proton-clang
       run: |
