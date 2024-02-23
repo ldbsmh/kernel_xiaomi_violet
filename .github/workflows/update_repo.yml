@@ -28,21 +28,6 @@ jobs:
           cd $GITHUB_WORKSPACE/kernel_workspace
           git clone https://github.com/ldbsmh/kernel_xiaomi_violet.git --depth=1
           
-      - name: Find latest tag (if exists)
-        id: tag
-        run: |
-          cd $GITHUB_WORKSPACE/kernel_workspace/kernel_xiaomi_violet
-          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
-          if [ -n "$latest_tag" ]; then
-            echo "::set-output name=latest_tag::$latest_tag"
-          fi
-          
-      - name: Checkout to latest tag
-        if: steps.tag.outputs.latest_tag != ''
-        run: |
-          cd $GITHUB_WORKSPACE/kernel_workspace/kernel_xiaomi_violet
-          git checkout ${{ steps.tag.outputs.latest_tag }}
-          
       - name: Integrate KernelSU
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace/kernel_xiaomi_violet
@@ -54,9 +39,14 @@ jobs:
           chmod +x build.sh
           ./build.sh
           filename=$(find . -name 'Quick*' -type f -printf '%f\n' | head -n1)
+          if [[ -z "$filename" ]]; then
+            echo "Error: Kernel build file not found."
+            exit 1
+          fi
           echo "FILENAME=$filename" >> $GITHUB_ENV
           
       - name: Uploading Kernel
+        if: success()
         uses: actions/upload-artifact@v3
         with:
           name: QuicksilveR_KernelSU
