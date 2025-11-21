@@ -549,7 +549,7 @@ int bpf_prog_array_copy(struct bpf_prog_array *old_array,
 		preempt_disable();			\
 		rcu_read_lock();			\
 		_array = rcu_dereference(array);	\
-		if (unlikely(check_non_null && !_array))\
+		if (unlikely(!_array))			\
 			goto _out;			\
 		_item = &_array->items[0];		\
 		while (_cnt < 64) {			\
@@ -607,6 +607,8 @@ _out:							\
 		preempt_disable();			\
 		rcu_read_lock();			\
 		_array = rcu_dereference(array);	\
+		if (unlikely(!_array))			\
+			goto _out_egress;		\
 		_item = &_array->items[0];		\
 		while (_cnt < 64) {			\
 			if (unlikely(!_item || (unsigned long)_item < (unsigned long)_array || \
@@ -624,6 +626,7 @@ _out:							\
 			_item++;			\
 			_cnt++;				\
 		}					\
+_out_egress:						\
 		rcu_read_unlock();			\
 		preempt_enable();			\
 		if (_ret)				\
